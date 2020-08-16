@@ -10,7 +10,7 @@ default: dlame.wasm
 dlame.wasm: $(LAME_LIB)
 	emcc $^ -Oz -Os \
 		-s WASM=1 -s MODULARIZE=1 -s NODEJS_CATCH_EXIT=0 \
-		-s EXPORTED_FUNCTIONS="['_malloc', '_calloc', '_free', '_lame_init', '_lame_init_params', '_lame_close', '_lame_set_mode', '_lame_set_num_channels', '_lame_set_VBR', '_lame_set_VBR_quality', '_lame_encode_buffer_ieee_float', '_lame_encode_flush']" \
+		-s EXPORTED_FUNCTIONS="['_malloc', '_calloc', '_free', '_lame_init', '_lame_init_params', '_lame_close', '_lame_set_mode', '_lame_set_num_channels', '_lame_set_in_samplerate', '_lame_set_VBR', '_lame_set_VBR_quality', '_lame_encode_buffer_ieee_float', '_lame_encode_flush']" \
 		-o dist/dlame.js
 
 $(LAME_LIB): $(LAME_MAKE)
