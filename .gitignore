@@ -1,2 +1,4 @@
 /dist
-lame-*
+/lame-*
+/node_modules
+package-lock.json
