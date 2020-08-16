@@ -8,9 +8,9 @@ LAME_MAKE=$(LAME_DIR)/Makefile
 default: dlame.wasm
 
 dlame.wasm: $(LAME_LIB)
-	emcc $^ -I$(DIST_DIR)/include \
-		-DNDEBUG -Oz -Os --llvm-lto 3 \
+	emcc $^ -Oz -Os \
 		-s WASM=1 -s MODULARIZE=1 -s NODEJS_CATCH_EXIT=0 \
+		-s EXPORTED_FUNCTIONS="['_malloc', '_calloc', '_free', '_lame_init', '_lame_init_params', '_lame_close', '_lame_set_mode', '_lame_set_num_channels', '_lame_set_VBR', '_lame_set_VBR_quality', '_lame_encode_buffer_ieee_float', '_lame_encode_flush']" \
 		-o dist/dlame.js
 
 $(LAME_LIB): $(LAME_MAKE)
@@ -20,7 +20,7 @@ $(LAME_LIB): $(LAME_MAKE)
 
 $(LAME_MAKE): sources
 	cd $(LAME_DIR) && \
-	emconfigure ./configure CFLAGS="-DNDEBUG -Oz" \
+	emconfigure ./configure CFLAGS="-Oz" \
 		--prefix="$(DIST_DIR)" --host=x86-none-linux \
 		--disable-static \
 		--disable-gtktest \
