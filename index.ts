@@ -2,13 +2,13 @@ type lame_t = number;
 type lame_ptr = number;
 type LameCall = 0 | -1 | -2 | -3;
 
-declare enum MPEG_mode {
+const enum MPEG_mode {
 
     STEREO = 0, JOINT_STEREO, DUAL_CHANNEL, MONO, NOT_SET, MAX_INDICATOR
 
 }
 
-declare enum vbr_mode {
+const enum vbr_mode {
 
     vbr_off = 0, vbr_mt, vbr_rh, vbr_abr, vbr_mtrh, vbr_max_indicator, vbr_default = 4
 
@@ -51,10 +51,25 @@ declare interface Lame extends Module {
 
     _lame_encode_buffer_ieee_float(gfp: lame_t, pcm_l: lame_ptr, pcm_r: lame_ptr, nsamples: number, mp3buf: lame_ptr, mp3buf_size: number): LameCall;
 
-    _lame_encode_flush(gfp: lame_t, mp3buffer: lame_ptr, mp3buffer_size: number): LameCall;
+    _lame_encode_flush(gfp: lame_t, mp3buffer: lame_ptr, mp3buffer_size: number): LameCall | number;
 
 }
 
 const MAX_SAMPLES = 65536;
 const PCM_BUF_SIZE = MAX_SAMPLES * 4;
 const BUF_SIZE = (MAX_SAMPLES * 1.25 + 7200);
+
+var lame: Lame;
+
+namespace Lame {
+
+    export async function load(): Promise<void> {
+        if (lame === undefined) {
+            const wasm_loader = require('./dist/dlame.js') as () => Promise<Lame>;
+            lame = await wasm_loader();
+        }
+    }
+
+}
+
+export default Lame;
