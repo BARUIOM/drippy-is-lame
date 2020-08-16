@@ -1,4 +1,9 @@
+*.js
+*.d.ts
+.vscode
+
 /dist
 /lame-*
 /node_modules
+
 package-lock.json

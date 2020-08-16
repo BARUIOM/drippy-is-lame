@@ -2,7 +2,7 @@
     "name": "drippy-is-lame",
     "version": "1.0.0",
     "description": "WebAssembly implementation of the LAME library",
-    "main": "dist/index.js",
+    "main": "index.js",
     "scripts": {
         "build": "make && tsc"
     },
