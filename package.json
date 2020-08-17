@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "transpile": "tsc",
-        "build": "make && transpile"
+        "build": "make && npm run transpile"
     },
     "repository": {
         "type": "git",
