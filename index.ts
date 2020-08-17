@@ -35,7 +35,7 @@ declare interface Lame extends Module {
 
     _lame_init(): lame_t;
 
-    _lame_init_params(): LameCall;
+    _lame_init_params(gfp: lame_t): LameCall;
 
     _lame_close(gfp: lame_t): LameCall;
 
@@ -59,16 +59,9 @@ const MAX_SAMPLES = 65536;
 const PCM_BUF_SIZE = MAX_SAMPLES * 4;
 const BUF_SIZE = (MAX_SAMPLES * 1.25 + 7200);
 
-var lame: Lame;
+const lame: Lame = require('./dist/dlame.js') as Lame;
 
 namespace Lame {
-
-    export async function load(): Promise<void> {
-        if (lame === undefined) {
-            const wasm_loader = require('./dist/dlame.js') as () => Promise<Lame>;
-            lame = await wasm_loader();
-        }
-    }
 
 }
 

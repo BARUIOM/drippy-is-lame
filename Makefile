@@ -5,13 +5,15 @@ DIST_DIR=$(LAME_DIR)/dist
 LAME_LIB=$(DIST_DIR)/lib/libmp3lame.so
 LAME_MAKE=$(LAME_DIR)/Makefile
 
-default: dist/dlame.wasm
+default: dist/dlame.js
 
-dist/dlame.wasm: $(LAME_LIB)
+dist/dlame.js: $(LAME_LIB)
 	emcc $^ -Oz -Os \
-		-s WASM=1 -s MODULARIZE=1 -s NODEJS_CATCH_EXIT=0 \
+		-s WASM=1 -s NODEJS_CATCH_EXIT=0 \
 		-s EXPORTED_FUNCTIONS="['_malloc', '_calloc', '_free', '_lame_init', '_lame_init_params', '_lame_close', '_lame_set_mode', '_lame_set_num_channels', '_lame_set_in_samplerate', '_lame_set_VBR', '_lame_set_VBR_quality', '_lame_encode_buffer_ieee_float', '_lame_encode_flush']" \
-		-o dist/dlame.js
+		-o $@
+	@[ -f dist/dlame.js ]
+	@echo "module.exports = Module" >> dist/dlame.js
 
 $(LAME_LIB): $(LAME_MAKE)
 	cd $(LAME_DIR) && \
