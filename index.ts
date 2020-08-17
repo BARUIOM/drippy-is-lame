@@ -2,6 +2,8 @@ type lame_t = number;
 type lame_ptr = number;
 type LameCall = 0 | -1 | -2 | -3;
 
+type hip_t = number;
+
 const enum MPEG_mode {
 
     STEREO = 0, JOINT_STEREO, DUAL_CHANNEL, MONO, NOT_SET, MAX_INDICATOR
@@ -53,15 +55,23 @@ declare interface Lame extends Module {
 
     _lame_encode_flush(gfp: lame_t, mp3buffer: lame_ptr, mp3buffer_size: number): LameCall | number;
 
-}
+    _hip_decode_init(): hip_t;
 
-const MAX_SAMPLES = 65536;
-const PCM_BUF_SIZE = MAX_SAMPLES * 4;
-const BUF_SIZE = (MAX_SAMPLES * 1.25 + 7200);
+    _hip_decode_exit(gfp: hip_t): LameCall;
+
+    _hip_decode1(gfp: hip_t, mp3buf: lame_ptr, len: number, pcm_l: lame_ptr, pcm_r: lame_ptr): LameCall | number;
+
+    _hip_decode1_headers(gfp: hip_t, mp3buf: lame_ptr, len: number, pcm_l: lame_ptr, pcm_r: lame_ptr, mp3data: lame_ptr): LameCall;
+
+}
 
 const lame: Lame = require('./dist/dlame.js') as Lame;
 
 namespace Lame {
+
+    const MAX_SAMPLES = 65536;
+    const PCM_BUF_SIZE = MAX_SAMPLES * 4;
+    const BUF_SIZE = (MAX_SAMPLES * 1.25 + 7200);
 
     export class Encoder {
 
@@ -127,6 +137,58 @@ namespace Lame {
 
         public close(): void {
             lame._lame_close(this.lame_t);
+            lame._free(this.buffer.byteOffset);
+            lame._free(this.pcm_buffers[0].byteOffset);
+            lame._free(this.pcm_buffers[1].byteOffset);
+        }
+
+    }
+
+    const MPEG_UCHAR_SIZE = 8192;
+    const PCM_SHORT_SIZE = 8192 * 2;
+
+    export class Decoder {
+
+        private readonly hip_t: hip_t;
+
+        private readonly buffer: Uint8Array;
+        private readonly pcm_buffers: Int16Array[];
+
+        public constructor() {
+            this.hip_t = lame._hip_decode_init();
+            this.buffer = new Uint8Array(lame.HEAP8.buffer, lame._malloc(MPEG_UCHAR_SIZE))
+            this.pcm_buffers = [
+                new Int16Array(lame.HEAP8.buffer, lame._malloc(PCM_SHORT_SIZE)),
+                new Int16Array(lame.HEAP8.buffer, lame._malloc(PCM_SHORT_SIZE))
+            ];
+        }
+
+        public *decode(data: Uint8Array): Iterable<Int16Array[]> {
+            for (let i = 0; i < data.length; i += MPEG_UCHAR_SIZE) {
+                const chunk = data.slice(i, i + MPEG_UCHAR_SIZE);
+                this.buffer.set(chunk, 0);
+
+                const _decoded = lame._hip_decode1(
+                    this.hip_t,
+                    this.buffer.byteOffset,
+                    chunk.length,
+                    this.pcm_buffers[0].byteOffset,
+                    this.pcm_buffers[1].byteOffset
+                );
+
+                if (_decoded == 0) {
+                    continue;
+                }
+
+                yield [
+                    this.pcm_buffers[0].slice(0, _decoded),
+                    this.pcm_buffers[1].slice(0, _decoded)
+                ];
+            }
+        }
+
+        public close(): void {
+            lame._hip_decode_exit(this.hip_t);
             lame._free(this.buffer.byteOffset);
             lame._free(this.pcm_buffers[0].byteOffset);
             lame._free(this.pcm_buffers[1].byteOffset);
