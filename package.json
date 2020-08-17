@@ -4,7 +4,8 @@
     "description": "WebAssembly implementation of the LAME library",
     "main": "index.js",
     "scripts": {
-        "build": "make && tsc"
+        "transpile": "tsc",
+        "build": "make && transpile"
     },
     "repository": {
         "type": "git",
@@ -18,7 +19,7 @@
     },
     "homepage": "https://github.com/DrippyMusic/drippy-is-lame#readme",
     "devDependencies": {
-        "@types/node": "^14.0.27",
+        "@types/requirejs": "^2.1.32",
         "typescript": "^3.9.7"
     }
 }
