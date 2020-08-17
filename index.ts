@@ -126,7 +126,10 @@ namespace Lame {
         }
 
         public close(): void {
-            lame._free(this.lame_t);
+            lame._lame_close(this.lame_t);
+            lame._free(this.buffer.byteOffset);
+            lame._free(this.pcm_buffers[0].byteOffset);
+            lame._free(this.pcm_buffers[1].byteOffset);
         }
 
     }
