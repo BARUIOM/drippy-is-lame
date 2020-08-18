@@ -11,10 +11,9 @@ default: dist/dlame.js
 dist/dlame.js: $(LAME_LIB)
 	@mkdir -p dist
 	emcc $^ -Oz -Os \
-		-s WASM=1 -s NODEJS_CATCH_EXIT=0 \
+		-s MODULARIZE=1 -s NODEJS_CATCH_EXIT=0 \
 		-s EXPORTED_FUNCTIONS="[ \
 			'_malloc', \
-			'_calloc', \
 			'_free', \
 			'_lame_init', \
 			'_lame_init_params', \
@@ -31,8 +30,6 @@ dist/dlame.js: $(LAME_LIB)
 			'_hip_decode1', \
 			'_hip_decode1_headers'\
 		]" -o $@
-	@[ -f dist/dlame.js ]
-	@echo "module.exports = Module" >> dist/dlame.js
 
 $(LAME_LIB): lame-$(LAME_VERSION)/configure
 	emmake $(MAKE) -j8 -C $(LAME_DIR)

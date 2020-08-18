@@ -16,24 +16,7 @@ const enum vbr_mode {
 
 }
 
-declare interface Module {
-    readonly HEAP8: Int8Array;
-    readonly HEAP16: Int16Array;
-    readonly HEAP32: Int32Array;
-    readonly HEAPU8: Uint8Array;
-    readonly HEAPU16: Uint16Array;
-    readonly HEAPU32: Uint32Array;
-    readonly HEAPF32: Float32Array;
-    readonly HEAPF64: Float64Array;
-
-    _malloc(__size: number): number;
-
-    _calloc(__nmemb: number, __size: number): number;
-
-    _free(__ptr: number): void;
-}
-
-declare interface Lame extends Module {
+declare interface Lame extends EmscriptenModule {
 
     _lame_init(): lame_t;
 
@@ -65,7 +48,9 @@ declare interface Lame extends Module {
 
 }
 
-const lame: Lame = require('./dist/dlame.js') as Lame;
+var lame: Lame;
+(require('./dist/dlame.js')() as Promise<Lame>)
+    .then(_lame => lame = _lame);
 
 namespace Lame {
 
