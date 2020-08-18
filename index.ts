@@ -168,22 +168,31 @@ namespace Lame {
                 const chunk = data.slice(i, i + MPEG_UCHAR_SIZE);
                 this.buffer.set(chunk, 0);
 
-                const _decoded = lame._hip_decode1(
-                    this.hip_t,
-                    this.buffer.byteOffset,
-                    chunk.length,
-                    this.pcm_buffers[0].byteOffset,
-                    this.pcm_buffers[1].byteOffset
-                );
+                for (let _length = chunk.length; ;) {
+                    const _decoded = lame._hip_decode1(
+                        this.hip_t,
+                        this.buffer.byteOffset,
+                        _length,
+                        this.pcm_buffers[0].byteOffset,
+                        this.pcm_buffers[1].byteOffset
+                    );
 
-                if (_decoded == 0) {
-                    continue;
+                    if (_decoded == 0) {
+                        if (_length == chunk.length) {
+                            _length = 0;
+                            continue;
+                        }
+
+                        break;
+                    }
+
+                    _length = 0;
+
+                    yield [
+                        this.pcm_buffers[0].slice(0, _decoded),
+                        this.pcm_buffers[1].slice(0, _decoded)
+                    ];
                 }
-
-                yield [
-                    this.pcm_buffers[0].slice(0, _decoded),
-                    this.pcm_buffers[1].slice(0, _decoded)
-                ];
             }
         }
 
