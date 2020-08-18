@@ -15,11 +15,6 @@ The following command will get LAME sources if not present yet and run `make` + 
 npm run build
 ```
 
-To transpile only, simply run:
-```
-npm run transpile
-```
-
 ## Further information
  - Make sure your machine is ready for compilation (`build-essential` and `automake` for Linux)
  - Compilation only tested under Linux environments (more specifically Ubuntu 18.04 LTS), no guarantees of working with `MinGW` or `Cygwin` under Windows machines

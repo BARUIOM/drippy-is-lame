@@ -4,8 +4,7 @@
     "description": "WebAssembly implementation of the LAME library",
     "main": "index.js",
     "scripts": {
-        "transpile": "tsc",
-        "build": "make && npm run transpile"
+        "build": "make && tsc"
     },
     "repository": {
         "type": "git",
