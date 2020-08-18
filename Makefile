@@ -1,26 +1,48 @@
-LAME_DIR=$(CURDIR)/lame-3.100
-LAME_SRC=https://ufpr.dl.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz
+LAME_VERSION=3.100
+
+LAME_DIR=$(CURDIR)/lame-$(LAME_VERSION)
+LAME_SRC=https://ufpr.dl.sourceforge.net/project/lame/lame/$(LAME_VERSION)/lame-$(LAME_VERSION).tar.gz
 
 DIST_DIR=$(LAME_DIR)/dist
 LAME_LIB=$(DIST_DIR)/lib/libmp3lame.so
-LAME_MAKE=$(LAME_DIR)/Makefile
 
 default: dist/dlame.js
 
 dist/dlame.js: $(LAME_LIB)
+	@mkdir -p dist
 	emcc $^ -Oz -Os \
 		-s WASM=1 -s NODEJS_CATCH_EXIT=0 \
-		-s EXPORTED_FUNCTIONS="['_malloc', '_calloc', '_free', '_lame_init', '_lame_init_params', '_lame_close', '_lame_set_mode', '_lame_set_num_channels', '_lame_set_in_samplerate', '_lame_set_VBR', '_lame_set_VBR_quality', '_lame_encode_buffer_ieee_float', '_lame_encode_flush', '_hip_decode_init', '_hip_decode_exit', '_hip_decode1', '_hip_decode1_headers']" \
-		-o $@
+		-s EXPORTED_FUNCTIONS="[ \
+			'_malloc', \
+			'_calloc', \
+			'_free', \
+			'_lame_init', \
+			'_lame_init_params', \
+			'_lame_close', \
+			'_lame_set_mode', \
+			'_lame_set_num_channels', \
+			'_lame_set_in_samplerate', \
+			'_lame_set_VBR', \
+			'_lame_set_VBR_quality', \
+			'_lame_encode_buffer_ieee_float', \
+			'_lame_encode_flush', \
+			'_hip_decode_init', \
+			'_hip_decode_exit', \
+			'_hip_decode1', \
+			'_hip_decode1_headers'\
+		]" -o $@
 	@[ -f dist/dlame.js ]
 	@echo "module.exports = Module" >> dist/dlame.js
 
-$(LAME_LIB): $(LAME_MAKE)
-	cd $(LAME_DIR) && \
-	emmake make -j8 && \
-	emmake make install
+$(LAME_LIB): lame-$(LAME_VERSION)/configure
+	emmake $(MAKE) -j8 -C $(LAME_DIR)
+	emmake $(MAKE) -C $(LAME_DIR) install
 
-$(LAME_MAKE): sources
+lame-$(LAME_VERSION)/configure:
+	@if [ ! -d "$(LAME_DIR)" ]; then \
+		(wget -N "$(LAME_SRC)" && tar -xvf lame-$(LAME_VERSION).tar.gz && rm -f lame-$(LAME_VERSION).tar.gz); \
+	fi
+	
 	cd $(LAME_DIR) && \
 	emconfigure ./configure CFLAGS="-Oz" \
 		--prefix="$(DIST_DIR)" --host=x86-none-linux \
@@ -29,16 +51,8 @@ $(LAME_MAKE): sources
 		--disable-analyzer-hooks \
 		--disable-frontend
 
-sources:
-	@mkdir -p dist
-	@if [ ! -d "$(LAME_DIR)" ]; then \
-		wget -N "$(LAME_SRC)" && \
-		tar -xvf lame-3.100.tar.gz && \
-		rm -f lame-3.100.tar.gz; \
-	fi
-
 clean:
-	@rm -rf dist/
-	@rm -rf $(LAME_DIR)
+	$(MAKE) -C $(LAME_DIR) clean
+	rm -rf $(DIST_DIR) dist
 
-.PHONY: clean sources
+.PHONY: clean
